@@ -9,6 +9,8 @@ const count = document.getElementById("task-count");
 const filters = document.querySelectorAll(".filters button");
 const clearBtn = document.getElementById("clear-completed");
 
+let reminderDays = 2;
+
 let tasks = [];
 let filter = "all";
 let editingTaskId = null;
@@ -62,6 +64,8 @@ function removeTask(id) {
 }
 
 function editTask(id) {
+  const task = tasks.find((x) => x.id === id);
+  if (!task || isOverdue(task)) return;
   editingTaskId = id;
   render();
 }
@@ -81,6 +85,19 @@ function saveEdit(id, titleValue, dueValue, priorityValue) {
   editingTaskId = null;
   save();
   render();
+}
+
+function getDueClass(task) {
+  if (!task.due || task.done) return "";
+  const dueDate = new Date(`${task.due}T23:59:59`);
+  if (Number.isNaN(dueDate.getTime())) return "";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.ceil((dueDate - today) / 86400000);
+  if (diffDays < 0) return "overdue";
+  if (diffDays === 0) return "due-today";
+  if (diffDays <= reminderDays) return "due-soon";
+  return "due-far";
 }
 
 function reorderTask(sourceId, targetId) {
@@ -135,26 +152,39 @@ function setFilter(f) {
   render();
 }
 
+function isOverdue(task) {
+  const dueClass = getDueClass(task);
+  return dueClass === "overdue";
+}
+
 function render() {
   list.innerHTML = "";
   const visible = tasks
     .filter((t) => {
       if (filter === "active") return !t.done;
       if (filter === "completed") return t.done;
+      if (filter === "overdue") return isOverdue(t);
       return true;
     })
     .sort((a, b) => a.order - b.order);
 
   visible.forEach((t) => {
+    const dueClass = getDueClass(t);
     const li = document.createElement("li");
     li.className =
       "task-item" +
       (t.done ? " completed" : "") +
-      (t.priority ? ` priority-${t.priority}` : "");
+      (t.priority ? ` priority-${t.priority}` : "") +
+      (dueClass ? ` ${dueClass}` : "");
     addDragHandlers(li, t.id);
     const chk = document.createElement("input");
     chk.type = "checkbox";
     chk.checked = t.done;
+    chk.disabled = dueClass === "overdue";
+    chk.title =
+      dueClass === "overdue"
+        ? "Sudah lewat batas, tidak bisa dicentang"
+        : "Tandai selesai";
     chk.addEventListener("change", () => toggleDone(t.id));
     const title = document.createElement("div");
     title.className = "title";
@@ -164,7 +194,14 @@ function render() {
     pri.textContent = t.priority ? t.priority.toUpperCase() : "MEDIUM";
     const meta = document.createElement("div");
     meta.className = "task-meta";
-    meta.textContent = t.due ? `Due: ${t.due}` : "";
+    if (t.due) {
+      meta.textContent = `Due: ${t.due}`;
+      if (dueClass === "overdue") {
+        meta.textContent += " • Sudah lewat batas";
+      }
+    } else {
+      meta.textContent = "";
+    }
     if (editingTaskId === t.id) {
       li.className += " editing";
       const editTitle = document.createElement("input");
@@ -231,6 +268,11 @@ function render() {
       const editBtn = document.createElement("button");
       editBtn.className = "btn";
       editBtn.textContent = "Edit";
+      editBtn.disabled = dueClass === "overdue";
+      editBtn.title =
+        dueClass === "overdue"
+          ? "Tidak bisa diedit karena sudah lewat batas"
+          : "Edit tugas";
       editBtn.addEventListener("click", () => editTask(t.id));
       const delBtn = document.createElement("button");
       delBtn.className = "btn";
