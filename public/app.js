@@ -1,5 +1,4 @@
 const STORAGE_KEY = "todo-tasks-v1";
-const SETTINGS_KEY = "todo-settings-v1";
 
 const form = document.getElementById("task-form");
 const input = document.getElementById("task-input");
@@ -15,28 +14,6 @@ let reminderDays = 2;
 let tasks = [];
 let filter = "all";
 let editingTaskId = null;
-let settings = {
-  enableBrowser: false,
-  enableBanner: true,
-  email: null,
-};
-
-function loadSettings() {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    const s = raw ? JSON.parse(raw) : {};
-    settings.enableBrowser = !!s.enableBrowser;
-    settings.enableBanner =
-      typeof s.enableBanner === "boolean" ? s.enableBanner : true;
-    settings.email = s.email || null;
-  } catch (e) {
-    settings = { enableBrowser: false, enableBanner: true, email: null };
-  }
-}
-
-function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-}
 
 function load() {
   try {
@@ -44,7 +21,6 @@ function load() {
     tasks = raw ? JSON.parse(raw) : [];
     tasks.forEach((t, index) => {
       if (typeof t.order !== "number") t.order = index;
-      if (typeof t.notifiedSoon !== "boolean") t.notifiedSoon = false;
     });
   } catch (e) {
     tasks = [];
@@ -68,7 +44,6 @@ function addTask(title, due, priority = "medium") {
     priority: priority || "medium",
     created: Date.now(),
     order: tasks.length,
-    notifiedSoon: false,
   });
   save();
   render();
@@ -106,96 +81,10 @@ function saveEdit(id, titleValue, dueValue, priorityValue) {
   t.title = titleValue.trim() || t.title;
   const dueTrim = dueValue.trim();
   t.due = dueTrim === "" ? null : dueTrim;
-  // Reset notified flag when due date changes so user can be notified again
-  t.notifiedSoon = false;
   t.priority = priorityValue || "medium";
   editingTaskId = null;
   save();
   render();
-}
-
-// Notification helpers
-function requestNotificationPermission() {
-  if (!("Notification" in window)) return;
-  if (!settings.enableBrowser) return;
-  if (Notification.permission === "default") {
-    Notification.requestPermission().catch(() => {});
-  }
-}
-
-function showInAppBanner(items) {
-  if (!settings.enableBanner) return;
-  let area = document.getElementById("notif-area");
-  if (!area) {
-    area = document.createElement("div");
-    area.id = "notif-area";
-    area.style.position = "fixed";
-    area.style.right = "16px";
-    area.style.top = "16px";
-    area.style.zIndex = 9999;
-    area.style.background = "#fff8e1";
-    area.style.border = "1px solid #ffd54f";
-    area.style.padding = "10px 12px";
-    area.style.borderRadius = "6px";
-    area.style.boxShadow = "0 2px 8px rgba(0,0,0,0.12)";
-    document.body.appendChild(area);
-  }
-  if (!items || items.length === 0) {
-    area.style.display = "none";
-    return;
-  }
-  area.style.display = "block";
-  area.innerHTML =
-    `<strong>Pengingat tugas dekat:</strong><br>` +
-    items
-      .slice(0, 5)
-      .map(
-        (x) =>
-          `<div style="margin-top:6px">• ${escapeHtml(x.title)} — due ${x.due}</div>`,
-      )
-      .join("") +
-    `<div style="text-align:right;margin-top:8px"><button id=notif-close style="margin-right:6px">Tutup</button></div>`;
-  const closeBtn = document.getElementById("notif-close");
-  if (closeBtn)
-    closeBtn.addEventListener("click", () => (area.style.display = "none"));
-}
-
-function escapeHtml(s) {
-  return String(s).replace(
-    /[&<>\"]/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '\"': "&quot;" })[c],
-  );
-}
-
-function notifySoonTasks() {
-  const toNotify = tasks.filter(
-    (t) => !t.done && !t.notifiedSoon && getDueClass(t) === "due-soon",
-  );
-  if (!toNotify.length) {
-    showInAppBanner([]);
-    return;
-  }
-  // Show browser notifications when permitted
-  toNotify.forEach((t) => {
-    try {
-      if (
-        settings.enableBrowser &&
-        "Notification" in window &&
-        Notification.permission === "granted"
-      ) {
-        const n = new Notification("Tugas segera jatuh tempo", {
-          body: `${t.title} — due ${t.due}`,
-          tag: t.id,
-        });
-        n.onclick = () => window.focus();
-      }
-    } catch (e) {
-      // ignore
-    }
-    t.notifiedSoon = true;
-  });
-  save();
-  if (settings.enableBanner) showInAppBanner(toNotify);
 }
 
 function getDueClass(task) {
@@ -428,125 +317,5 @@ clearBtn.addEventListener("click", () => {
 });
 
 // init
-loadSettings();
 load();
 render();
-// setup settings UI values and handlers
-function hookupSettingsUI() {
-  const browserChk = document.getElementById("enable-browser-notif");
-  const bannerChk = document.getElementById("enable-inapp-banner");
-  const emailInput = document.getElementById("reminder-email");
-  const saveEmailBtn = document.getElementById("save-email");
-  if (browserChk) {
-    browserChk.checked = !!settings.enableBrowser;
-    browserChk.addEventListener("change", (e) => {
-      settings.enableBrowser = !!e.target.checked;
-      saveSettings();
-      if (settings.enableBrowser) requestNotificationPermission();
-    });
-  }
-  if (bannerChk) {
-    bannerChk.checked = !!settings.enableBanner;
-    bannerChk.addEventListener("change", (e) => {
-      settings.enableBanner = !!e.target.checked;
-      saveSettings();
-      if (!settings.enableBanner) showInAppBanner([]);
-    });
-  }
-  if (emailInput) {
-    emailInput.value = settings.email || "";
-  }
-  if (saveEmailBtn) {
-    saveEmailBtn.addEventListener("click", () => {
-      const v = emailInput.value.trim();
-      settings.email = v === "" ? null : v;
-      saveSettings();
-      alert(
-        "Email pengingat disimpan (pengiriman email memerlukan integrasi).",
-      );
-    });
-  }
-  // Push controls
-  const vapidInput = document.getElementById("vapid-key");
-  const subscribeBtn = document.getElementById("subscribe-push");
-  const unsubscribeBtn = document.getElementById("unsubscribe-push");
-  if (vapidInput) vapidInput.value = settings.vapidPublicKey || "";
-  if (subscribeBtn)
-    subscribeBtn.addEventListener("click", async () => {
-      const key =
-        (vapidInput && vapidInput.value.trim()) || settings.vapidPublicKey;
-      if (!key) return alert("Masukkan VAPID public key terlebih dahulu.");
-      try {
-        const sub = await subscribeToPush(key);
-        settings.pushSubscription = sub;
-        settings.vapidPublicKey = key;
-        saveSettings();
-        alert(
-          "Berhasil berlangganan push. Kirim objek subscription ke server Anda.",
-        );
-      } catch (e) {
-        alert("Gagal subscribe: " + (e && e.message));
-      }
-    });
-  if (unsubscribeBtn)
-    unsubscribeBtn.addEventListener("click", async () => {
-      try {
-        await unsubscribePush();
-        settings.pushSubscription = null;
-        saveSettings();
-        alert("Berhenti berlangganan push.");
-      } catch (e) {
-        alert("Gagal unsubscribe: " + (e && e.message));
-      }
-    });
-}
-
-// Register service worker and helpers for Push
-async function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) return null;
-  try {
-    const reg = await navigator.serviceWorker.register("/sw.js");
-    return reg;
-  } catch (e) {
-    console.warn("SW register failed", e);
-    return null;
-  }
-}
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-async function subscribeToPush(vapidPublicKey) {
-  const reg = await registerServiceWorker();
-  if (!reg) throw new Error("Service Worker tidak terdaftar");
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") throw new Error("Izin notifikasi ditolak");
-  const sub = await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-  });
-  // return plain object serializable to JSON
-  return sub.toJSON();
-}
-
-async function unsubscribePush() {
-  if (!("serviceWorker" in navigator)) return;
-  const reg = await navigator.serviceWorker.ready;
-  const sub = await reg.pushManager.getSubscription();
-  if (sub) {
-    await sub.unsubscribe();
-  }
-}
-hookupSettingsUI();
-// Ask for notification permission and run an initial check + periodic checks
-if (settings.enableBrowser) requestNotificationPermission();
-notifySoonTasks();
-setInterval(notifySoonTasks, 15 * 60 * 1000); // check every 15 minutes

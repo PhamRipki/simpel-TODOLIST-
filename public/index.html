@@ -36,30 +36,6 @@
       </div>
     </div>
 
-    <section id="settings" class="settings">
-      <h2>Pengaturan Notifikasi</h2>
-      <label><input type="checkbox" id="enable-browser-notif" /> Aktifkan notifikasi browser</label>
-      <label><input type="checkbox" id="enable-inapp-banner" checked /> Tampilkan banner pengingat di aplikasi</label>
-      <div class="email-setting">
-        <label>Email untuk pengingat (opsional):</label>
-        <input type="email" id="reminder-email" placeholder="nama@contoh.com" />
-        <button id="save-email">Simpan Email</button>
-        <div class="email-note">Catatan: pengiriman email memerlukan integrasi dengan layanan eksternal atau backend.
-        </div>
-      </div>
-      <div class="push-setting">
-        <h3>Push Notifications (Service Worker)</h3>
-        <label>VAPID Public Key (Base64 URL-safe):</label>
-        <input id="vapid-key" placeholder="Buat atau tempel public key..." style="width:100%" />
-        <div style="margin-top:6px">
-          <button id="subscribe-push">Subscribe Push</button>
-          <button id="unsubscribe-push">Unsubscribe Push</button>
-        </div>
-        <div class="push-note">Note: Push membutuhkan HTTPS and a server to send push messages using the subscription
-          object.</div>
-      </div>
-    </section>
-
     <ul id="task-list" class="task-list" aria-live="polite"></ul>
   </main>
 
