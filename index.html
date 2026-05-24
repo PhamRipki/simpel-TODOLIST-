@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <main class="app">
+    <h1>TO DO LIST</h1>
+
+    <form id="task-form" class="task-form">
+      <input id="task-input" placeholder="Tambahkan tugas baru..." autocomplete="off" required />
+      <input id="due-input" type="date" title="Tanggal jatuh tempo (opsional)" />
+      <select id="priority-select" title="Prioritas tugas">
+        <option value="high">Prioritas Tinggi</option>
+        <option value="medium" selected>Prioritas Sedang</option>
+        <option value="low">Prioritas Rendah</option>
+      </select>
+      <button type="submit">Tambah</button>
+    </form>
+
+    <div class="controls">
+      <div class="filters">
+        <button data-filter="all" class="active">Semua</button>
+        <button data-filter="active">Aktif</button>
+        <button data-filter="completed">Selesai</button>
+      </div>
+      <div class="actions">
+        <button id="clear-completed">Hapus Selesai</button>
+        <span id="task-count">0 tugas</span>
+      </div>
+    </div>
+
+    <ul id="task-list" class="task-list" aria-live="polite"></ul>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
