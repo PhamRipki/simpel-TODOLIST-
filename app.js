@@ -17,6 +17,9 @@ function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     tasks = raw ? JSON.parse(raw) : [];
+    tasks.forEach((t, index) => {
+      if (typeof t.order !== 'number') t.order = index;
+    });
   } catch (e) {
     tasks = [];
   }
@@ -38,6 +41,7 @@ function addTask(title, due, priority = "medium") {
     due: due || null,
     priority: priority || "medium",
     created: Date.now(),
+    order: tasks.length,
   });
   save();
   render();
@@ -79,6 +83,46 @@ function saveEdit(id, titleValue, dueValue, priorityValue) {
   render();
 }
 
+function reorderTask(sourceId, targetId) {
+  if (sourceId === targetId) return;
+  const fromIndex = tasks.findIndex((x) => x.id === sourceId);
+  const toIndex = tasks.findIndex((x) => x.id === targetId);
+  if (fromIndex === -1 || toIndex === -1) return;
+  const [moved] = tasks.splice(fromIndex, 1);
+  tasks.splice(toIndex, 0, moved);
+  tasks.forEach((task, index) => {
+    task.order = index;
+  });
+  save();
+  render();
+}
+
+function addDragHandlers(li, taskId) {
+  li.draggable = true;
+  li.addEventListener('dragstart', (e) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', taskId);
+    li.classList.add('dragging');
+  });
+  li.addEventListener('dragend', () => {
+    li.classList.remove('dragging');
+  });
+  li.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    li.classList.add('drag-over');
+  });
+  li.addEventListener('dragleave', () => {
+    li.classList.remove('drag-over');
+  });
+  li.addEventListener('drop', (e) => {
+    e.preventDefault();
+    li.classList.remove('drag-over');
+    const sourceId = e.dataTransfer.getData('text/plain');
+    reorderTask(sourceId, taskId);
+  });
+}
+
 function clearCompleted() {
   tasks = tasks.filter((x) => !x.done);
   save();
@@ -99,15 +143,7 @@ function render() {
       if (filter === "completed") return t.done;
       return true;
     })
-    .sort((a, b) => {
-      // sort by done, then priority (high, medium, low), then created
-      if (a.done !== b.done) return a.done - b.done;
-      const weight = (p) => (p === "high" ? 0 : p === "medium" ? 1 : 2);
-      const wa = weight(a.priority || "medium");
-      const wb = weight(b.priority || "medium");
-      if (wa !== wb) return wa - wb;
-      return a.created - b.created;
-    });
+    .sort((a, b) => a.order - b.order); 
 
   visible.forEach((t) => {
     const li = document.createElement("li");
@@ -115,6 +151,7 @@ function render() {
       "task-item" +
       (t.done ? " completed" : "") +
       (t.priority ? ` priority-${t.priority}` : "");
+    addDragHandlers(li, t.id);
     const chk = document.createElement("input");
     chk.type = "checkbox";
     chk.checked = t.done;
@@ -154,7 +191,9 @@ function render() {
       const saveBtn = document.createElement("button");
       saveBtn.className = "btn save-btn";
       saveBtn.textContent = "Save";
-      saveBtn.addEventListener("click", () => saveEdit(t.id, editTitle.value, editDue.value, editPriority.value));
+      saveBtn.addEventListener("click", () =>
+        saveEdit(t.id, editTitle.value, editDue.value, editPriority.value),
+      );
       const cancelBtn = document.createElement("button");
       cancelBtn.className = "btn cancel-btn";
       cancelBtn.textContent = "Cancel";

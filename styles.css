@@ -129,6 +129,16 @@ h1 {
   background: #fff7ed;
   border-color: #fbbf24;
 }
+
+.task-item.dragging {
+  opacity: 0.5;
+}
+
+.task-item.drag-over {
+  background: #eef2ff;
+  border-color: #4f46e5;
+}
+
 .task-item .edit-fields {
   display: flex;
   flex-wrap: wrap;
@@ -136,27 +146,33 @@ h1 {
   align-items: center;
   flex: 1;
 }
+
 .task-item .edit-input {
   padding: 8px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   background: white;
 }
+
 .task-item input.edit-input[type="text"] {
   flex: 1;
   min-width: 140px;
 }
+
 .task-item input.edit-input[type="date"] {
   width: 155px;
 }
+
 .task-item select.edit-input {
   width: 130px;
 }
+
 .task-item .save-btn {
   background: #10b981;
   color: white;
   border: none;
 }
+
 .task-item .cancel-btn {
   background: #ef4444;
   color: white;

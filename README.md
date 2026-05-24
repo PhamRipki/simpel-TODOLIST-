@@ -15,6 +15,7 @@ Fitur:
 - Hapus semua tugas yang selesai
 - Prioritas tugas: `High`, `Medium`, `Low` saat menambah tugas
 - Edit tugas langsung di bar tugas dengan form inline yang lebih menarik
+- Urutkan tugas dengan drag & drop ke posisi yang diinginkan
 - Edit tanggal jatuh tempo setelah membuat tugas dengan tombol Edit
 
 Catatan:
