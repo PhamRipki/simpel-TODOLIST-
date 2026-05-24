@@ -18,7 +18,7 @@ function load() {
     const raw = localStorage.getItem(STORAGE_KEY);
     tasks = raw ? JSON.parse(raw) : [];
     tasks.forEach((t, index) => {
-      if (typeof t.order !== 'number') t.order = index;
+      if (typeof t.order !== "number") t.order = index;
     });
   } catch (e) {
     tasks = [];
@@ -99,26 +99,26 @@ function reorderTask(sourceId, targetId) {
 
 function addDragHandlers(li, taskId) {
   li.draggable = true;
-  li.addEventListener('dragstart', (e) => {
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', taskId);
-    li.classList.add('dragging');
+  li.addEventListener("dragstart", (e) => {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", taskId);
+    li.classList.add("dragging");
   });
-  li.addEventListener('dragend', () => {
-    li.classList.remove('dragging');
+  li.addEventListener("dragend", () => {
+    li.classList.remove("dragging");
   });
-  li.addEventListener('dragover', (e) => {
+  li.addEventListener("dragover", (e) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    li.classList.add('drag-over');
+    e.dataTransfer.dropEffect = "move";
+    li.classList.add("drag-over");
   });
-  li.addEventListener('dragleave', () => {
-    li.classList.remove('drag-over');
+  li.addEventListener("dragleave", () => {
+    li.classList.remove("drag-over");
   });
-  li.addEventListener('drop', (e) => {
+  li.addEventListener("drop", (e) => {
     e.preventDefault();
-    li.classList.remove('drag-over');
-    const sourceId = e.dataTransfer.getData('text/plain');
+    li.classList.remove("drag-over");
+    const sourceId = e.dataTransfer.getData("text/plain");
     reorderTask(sourceId, taskId);
   });
 }
@@ -143,7 +143,7 @@ function render() {
       if (filter === "completed") return t.done;
       return true;
     })
-    .sort((a, b) => a.order - b.order); 
+    .sort((a, b) => a.order - b.order);
 
   visible.forEach((t) => {
     const li = document.createElement("li");
