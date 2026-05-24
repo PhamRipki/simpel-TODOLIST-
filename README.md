@@ -2,11 +2,6 @@
 
 Simple interactive To-Do web app that stores tasks in the browser's `localStorage`.
 
-Cara menjalankan:
-
-1. Buka file `index.html` di browser (klik dua kali atau `File -> Open` di browser).
-2. Tambahkan tugas, tandai selesai, edit, atau hapus. Semua data disimpan otomatis di `localStorage`.
-
 Fitur:
 
 - Tambah tugas dengan tanggal jatuh tempo opsional
@@ -22,7 +17,7 @@ Fitur:
 Coba aplikasi di Vercel:
 
 - Buka link berikut untuk mencoba aplikasi secara online:
-  - [Link Vercel akan dicantumkan di sini]
+  - [\[Link Vercel akan dicantumkan di sini\]](https://simpel-todolist.vercel.app/)
 
 Catatan:
 
