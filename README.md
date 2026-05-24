@@ -17,8 +17,7 @@ Fitur:
 Coba aplikasi di Vercel:
 
 - Buka link berikut untuk mencoba aplikasi secara online:
-  - [\[Link Vercel akan dicantumkan di sini\]](https://simpel-todolist.vercel.app/)
-
+- 
 Catatan:
 
 - Tidak ada fitur export/import JSON atau sinkronisasi cloud di versi ini.
