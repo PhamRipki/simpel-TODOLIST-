@@ -19,13 +19,3 @@ Fitur:
 - Reminder warna untuk tugas dengan status deadline: jauh (biru), mendekati (kuning), hari ini (merah), lewat (hitam)
 - Edit tanggal jatuh tempo setelah membuat tugas dengan tombol Edit
 
-<<<<<<< HEAD
-=======
-Coba aplikasi di Vercel:
-
-- Buka link berikut untuk mencoba aplikasi secara online:
-- 
->>>>>>> 4b28b5f376260fc15fd9e0e6c91fee1d8b6e0f9e
-Catatan:
-
-- Tidak ada fitur export/import JSON atau sinkronisasi cloud di versi ini.
